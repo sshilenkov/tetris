@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+  line-height: 1;
+}
+
+.tetris {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #37474F;
+}
+
+.tetris__field {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  top: -100px;
+  width: 250px;
+  height: 600px;
+  left: 50%;
+  background-color: #78909C;
+  transform: translateX(-50%);
+}
+
+.tetris__section {
+  width: 25px;
+  height: 25px;
+  box-sizing: border-box;
+}
+
+.tetris__block {
+  background-color: #fff;
+  border: 1px solid #000;
+}
