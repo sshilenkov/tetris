@@ -33,7 +33,12 @@ body {
   box-sizing: border-box;
 }
 
-.tetris__block {
+.tetris__block,
+.tetris__block--static {
   background-color: #fff;
   border: 1px solid #000;
+}
+
+.tetris__block--static {
+  opacity: .7;
 }
