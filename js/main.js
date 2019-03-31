@@ -218,7 +218,11 @@ const getRandomFigure = function() {
   return Math.floor(Math.random() * 7);
 }
 
+// Переменная, в которой хранятся блоки фигуры на текущий момент
 let figure = [];
+// Переменная, в которой хранятся блоки для следующего положения фигуры
+let newFigure = [];
+// Переменная, в которой хранится номер текущей фигуры
 let currentFigure;
 
 // Создаем фигуру
@@ -246,44 +250,10 @@ function createFigure(x, y) {
 }
 
 createFigure(5, 10);
+let canMove = true;
 
-// Двигаем фигуру вниз
-let canMoveByX = true;
-let canMoveByY = true;
-
-// Проверяем пространство, куда должна переместиться фигура
-function isFreeX(x) {
-  figure.forEach(el => {
-    const coordX = +el.getAttribute('data-x');
-    const coordY = +el.getAttribute('data-y');
-    const newSection = sectionsArr.find(elem => {
-      return +elem.getAttribute('data-x') == (coordX + x) && +elem.getAttribute('data-y') == coordY;
-    });
-
-    if (newSection == undefined || newSection.classList.contains('tetris__block--static')) {
-      canMoveByX = false;
-      return;
-    }
-  });
-}
-
-function isFreeY() {
-  figure.forEach(el => {
-    const coordX = +el.getAttribute('data-x');
-    const coordY = +el.getAttribute('data-y');
-    const newSection = sectionsArr.find(elem => {
-      return +elem.getAttribute('data-x') == coordX && +elem.getAttribute('data-y') == (coordY + 1);
-    });
-
-    if (+coordY > 23 || newSection.classList.contains('tetris__block--static')) {
-      canMoveByY = false;
-      return;
-    }
-  });
-}
-
-// Убираем старую фигуру и создаем новую
-function newFigure(x, y) {
+// Проверяем новую позицию
+function newPosition(x, y) {
   figure.forEach( (el, i) => {
     const coordX = +el.getAttribute('data-x');
     const coordY = +el.getAttribute('data-y');
@@ -291,9 +261,22 @@ function newFigure(x, y) {
       return +elem.getAttribute('data-x') == (coordX + x) && +elem.getAttribute('data-y') == (coordY + y);
     });
 
-    el.classList.remove('tetris__block');
-    figure.splice(i, 1, newBlock);
+    newFigure.splice(i, 1, newBlock);
   });
+  newFigure.forEach(el => {
+    if (el == undefined || el.classList.contains('tetris__block--static')) {
+      canMove = false;
+    }
+  });
+}
+
+function moveFigure() {
+  figure.forEach(el => {
+    el.classList.remove('tetris__block');
+  });
+  figure.length = 0;
+  figure = newFigure.slice();
+  newFigure.length = 0;
   figure.forEach(el => {
     el.classList.add('tetris__block');
   });
@@ -314,13 +297,18 @@ function rotateFigure() {
         return +elem.getAttribute('data-x') == (coordX + newCoordX) && +elem.getAttribute('data-y') == (coordY + newCoordY);
       });
 
-      el.classList.remove('tetris__block');
-      figure.splice(i, 1, newBlock);
+      newFigure.splice(i, 1, newBlock);
     });
-    figure.forEach(el => {
-      el.classList.add('tetris__block');
+    newFigure.forEach(el => {
+      if (el == undefined || el.classList.contains('tetris__block--static')) {
+        canMove = false;
+      }
     });
-    ++currentState;
+    if (canMove) {
+      moveFigure();
+      ++currentState;
+    }
+    canMove = true;
     if (currentState == stateVariants) {
       currentState = 0;
     }
@@ -328,19 +316,18 @@ function rotateFigure() {
 }
 
 function moveDown() {
-  // Проверяем на наличие препятствий пространство под фигурой
-  isFreeY();
-
   // Если препятствий нет - двигаем фигуру вниз
-  if (canMoveByY) {
-    newFigure(0, 1);
+  newPosition(0, 1);
+
+  if (canMove) {
+    canMove && moveFigure();
   } else {
     figure.forEach(el => {
       el.classList.add('tetris__block--static');
     });
-    figure = [];
+    figure.length = 0;
     createFigure(5, 10);
-    canMoveByY = true;
+    canMove = true;
     currentState = 0;
   }
 }
@@ -348,28 +335,27 @@ function moveDown() {
 setInterval(moveDown, 500);
 
 // Обрабатываем нажатие стрелок
-function moveFigure(e) {
+function relocateFigure(e) {
   if (e.code == 'ArrowLeft') {
-    isFreeX(-1);
-    canMoveByX && newFigure(-1, 0);
-    canMoveByX = true;
+    newPosition(-1, 0);
+    canMove && moveFigure(-1, 0);
+    canMove = true;
   }
   if (e.code == 'ArrowDown') {
-    isFreeY();
-    canMoveByY && newFigure(0, 1);
-    canMoveByY = true;
+    newPosition(0, 1);
+    canMove && moveFigure(0, 1);
+    canMove = true;
   }
   if (e.code == 'ArrowRight') {
-    isFreeX(1);
-    canMoveByX && newFigure(1, 0);
-    canMoveByX = true;
+    newPosition(1, 0);
+    canMove && moveFigure(1, 0);
+    canMove = true;
   }
   if (e.code == 'ArrowUp') {
-    isFreeX(-1);
-    isFreeX(1);
-    canMoveByX && rotateFigure();
-    canMoveByX = true;
+    newPosition(0, 0);
+    canMove && rotateFigure();
+    canMove = true;
   }
 }
 
-addEventListener('keydown', moveFigure);
+addEventListener('keydown', relocateFigure);
