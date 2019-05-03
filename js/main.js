@@ -308,6 +308,7 @@ function isLinesFull() {
           }
         });
       }
+      sectionsAbove.reverse();
       sectionsAbove.forEach(el => {   //проходим по всем ячейкам над стертой линией и смещаем их вниз
         el.classList.remove('tetris__block','tetris__block--static');
         let coordX = +el.getAttribute('data-x');
