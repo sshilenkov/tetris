@@ -213,6 +213,16 @@ const figuresList = [
   ]
 ];
 
+const figureColor = [
+  '#FFEB3B',    //yellow
+  '#f44336',    //red
+  '#4CAF50',    //green
+  '#00BCD4',    //cyan
+  '#00BCD4',    //lime
+  '#00BCD4',    //purple
+  '#00BCD4',    //brown
+]
+
 // Выбор случайного числа от 0 до 6
 const getRandomFigure = function() {
   return Math.floor(Math.random() * 7);
@@ -308,7 +318,7 @@ function isLinesFull() {
           }
         });
       }
-      sectionsAbove.reverse();
+      sectionsAbove.reverse();  //делаем реверс массива с ячейками над стертой линией, чтобы смещение вниз начиналось с нижних ячеек
       sectionsAbove.forEach(el => {   //проходим по всем ячейкам над стертой линией и смещаем их вниз
         el.classList.remove('tetris__block','tetris__block--static');
         let coordX = +el.getAttribute('data-x');
@@ -362,7 +372,7 @@ function moveDown() {
   newPosition(0, 1);
 
   if (canMove) {
-    canMove && moveFigure();
+    moveFigure();
   } else {
     figure.forEach(el => {
       el.classList.add('tetris__block--static');
@@ -372,6 +382,7 @@ function moveDown() {
     createFigure(5, 5);
     canMove = true;
     currentState = 0;
+    isGameOver();
   }
 }
 
@@ -400,5 +411,26 @@ function relocateFigure(e) {
     canMove = true;
   }
 }
-
+//Слушаем нажатия стрелок
 addEventListener('keydown', relocateFigure);
+
+//Логика завершения игры
+function isGameOver() {
+  //верхняя линия, достигнув которую игра заканчивается ...
+  let finishLine = [];
+  //... добавляем в нее ячейки
+  sectionsArr.forEach(el => {
+    (el.getAttribute('data-y') == 5) && finishLine.push(el);
+  });
+  //проверяем верхнюю линию на наличие в ней упавших фигур. Если находим - игра заканчивается
+  finishLine.forEach(el => {
+    if (el.classList.contains('tetris__block--static')) {
+      //выводим сообщение для игрока
+      alert('Вы проиграли... Но не расстраивайтесь! Попробуйте снова ☺');
+      //очищаем игровое поле
+      sectionsArr.forEach(elem => {
+        elem.classList.remove('tetris__block', 'tetris__block--static');
+      });
+    }
+  });
+}

@@ -40,5 +40,27 @@ body {
 }
 
 .tetris__block--static {
-  opacity: .7;
+  opacity: .6;
+}
+
+.tetris__block--yellow {
+  background-color: #FFEB3B;
+}
+.tetris__block--red {
+  background-color: #f44336;
+}
+.tetris__block--green {
+  background-color: #4CAF50;
+}
+.tetris__block--cyan {
+  background-color: #00BCD4;
+}
+.tetris__block--lime {
+  background-color: #00BCD4;
+}
+.tetris__block--purple {
+  background-color: #00BCD4;
+}
+.tetris__block--brown {
+  background-color: #00BCD4;
 }
