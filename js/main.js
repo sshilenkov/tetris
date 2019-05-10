@@ -1,18 +1,22 @@
-const field = document.querySelector('.tetris__field');
+const field = document.querySelector('.tetris__field'); // Игровое поле
+const next = document.querySelector('.tetris__next-figure'); // Поле со следующей фигурой
 
-// Создание сетки внутри игрового поля
-
-// Разбивка поля на секции
+// Разбивка полей на секции
 for (let i=1; i<241; i++) {
   const section = document.createElement('div');
   section.classList.add('tetris__section');
   field.appendChild(section);
 }
 
+for (let i=1; i<37; i++) {
+  const section = document.createElement('div');
+  section.classList.add('tetris__section-next');
+  next.appendChild(section);
+}
 
 // Добавление координат для каждой секции
-const sections = document.querySelectorAll('.tetris__section');
-const sectionsArr = Array.from(sections);
+const sectionsArr = Array.from(document.querySelectorAll('.tetris__section'));
+const sectionsNextArr = Array.from(document.querySelectorAll('.tetris__section-next'));
 
 let axisX = 1;
 let axisY = 1;
@@ -21,6 +25,17 @@ sectionsArr.map(el => {
   el.setAttribute('data-X', axisX);
   el.setAttribute('data-Y', axisY);
   if (axisX < 10) {
+    ++axisX;
+  } else {
+    axisX = 1;
+    ++axisY;
+  }
+});
+
+sectionsNextArr.map(el => {
+  el.setAttribute('data-X', axisX);
+  el.setAttribute('data-Y', axisY);
+  if (axisX < 6) {
     ++axisX;
   } else {
     axisX = 1;
@@ -213,14 +228,14 @@ const figuresList = [
   ]
 ];
 
-const figureColor = [
+const colors = [
   '#FFEB3B',    //yellow
+  '#9C27B0',    //purple
+  '#00BCD4',    //cyan
   '#f44336',    //red
   '#4CAF50',    //green
-  '#00BCD4',    //cyan
-  '#00BCD4',    //lime
-  '#00BCD4',    //purple
-  '#00BCD4',    //brown
+  '#FF5722',    //orange
+  '#0D47A1',    //blue
 ]
 
 // Выбор случайного числа от 0 до 6
@@ -232,21 +247,70 @@ const getRandomFigure = function() {
 let figure = [];
 // Переменная, в которой хранятся блоки для следующего положения фигуры
 let newFigure = [];
+// Переменная, в которой хранятся блоки для следующей фигуры
+let nextFigure = [];
 // Переменная, в которой хранится номер текущей фигуры
 let currentFigure;
+// Переменная, в которой хранится номер следующей фигуры
+let followFigure;
+// Цвет текущей фигуры
+let figureColor;
+// Цвет следующей фигуры
+let followFigureColor;
+// Текущее положение фигуры в пространстве
+let currentState = 0;
+// Флаг, определяющий возможность перемещения фигуры
+let canMove = true;
+// Скорость падения фигуры
+let fallSpeed = 500;
+// Набранные баллы
+let points = 0;
+
+// Создаем следующую фигуру
+function createNextFigure() {
+  // Получаем случайную фигуру из массива
+  followFigure = getRandomFigure();
+  followFigureColor = colors[followFigure];
+  const figureSections = figuresList[followFigure];
+
+  // Создаем главный блок (всегда левый нижний)
+  const mainBlock = sectionsNextArr.find(el => {
+    return el.getAttribute('data-x') == 3 && el.getAttribute('data-y') == 29;
+  })
+  mainBlock.classList.add('tetris__block');
+  mainBlock.style.backgroundColor = followFigureColor;
+  nextFigure.push(mainBlock);
+
+  // Добавляем к главному блоку остальные по полученным координатам
+  figureSections.forEach( (el, i) => {
+    if (i == 3) {
+      return;
+    }
+    const block = sectionsNextArr.find(elem => {
+      return elem.getAttribute('data-x') == (3+el[0]) && elem.getAttribute('data-y') == (29+el[1]);
+    });
+    block.classList.add('tetris__block');
+    block.style.backgroundColor = followFigureColor;
+    nextFigure.push(block);
+  });
+}
 
 // Создаем фигуру
 function createFigure(x, y) {
+  // Копируем следующую фигуру для основного поля
+  currentFigure = followFigure;
+  figureColor = followFigureColor;
+  const figureSections = figuresList[currentFigure];
+
   // Создаем главный блок (всегда левый нижний)
   const mainBlock = sectionsArr.find(el => {
     return el.getAttribute('data-x') == x && el.getAttribute('data-y') == y;
   })
   mainBlock.classList.add('tetris__block');
+  mainBlock.style.backgroundColor = figureColor;
   figure.push(mainBlock);
 
-  // Получаем координаты случайной фигуры из массива и присваиваем классы
-  currentFigure = getRandomFigure();
-  const figureSections = figuresList[currentFigure];
+  // Добавляем к главному блоку остальные по полученным координатам
   figureSections.forEach( (el, i) => {
     if (i == 3) {
       return;
@@ -255,12 +319,20 @@ function createFigure(x, y) {
       return elem.getAttribute('data-x') == (x+el[0]) && elem.getAttribute('data-y') == (y+el[1]);
     });
     block.classList.add('tetris__block');
+    block.style.backgroundColor = figureColor;
     figure.push(block);
   });
+  // Создаем новую следующую фигуру
+  nextFigure.forEach(el => {
+    el.classList.remove('tetris__block');
+    el.style.backgroundColor = 'transparent';
+  });
+  nextFigure.length = 0;
+  createNextFigure();
 }
 
+createNextFigure();
 createFigure(5, 5);
-let canMove = true;
 
 // Проверяем новую позицию
 function newPosition(x, y) {
@@ -283,13 +355,22 @@ function newPosition(x, y) {
 function moveFigure() {
   figure.forEach(el => {
     el.classList.remove('tetris__block');
+    el.style.backgroundColor = 'transparent';
   });
   figure.length = 0;
   figure = newFigure.slice();
   newFigure.length = 0;
   figure.forEach(el => {
     el.classList.add('tetris__block');
+    el.style.backgroundColor = figureColor;
   });
+}
+
+// Увеличение баллов
+function increasePoints() {
+  const pointsField = document.querySelector('.tetris__points');
+  points += 10;
+  pointsField.textContent = points;
 }
 
 // Проверяем линии на заполненность
@@ -300,14 +381,15 @@ function isLinesFull() {
       sectionsArr.forEach((element) => {  //проходимся по всему полю
         const coordX = +element.getAttribute('data-x');
         const coordY = +element.getAttribute('data-y');
-        if (coordX == x && coordY == y && element.classList.contains('tetris__block--static')) {  //если в текущей линии текущая ячейка содержит указанный класс
-          fullLine.push(element);   //добавляем эту ячейку в переменную
+        if (coordX == x && coordY == y && element.classList.contains('tetris__block--static')) {  //если в текущей линии текущая ячейка содержит указанный класс...
+          fullLine.push(element);   // ...добавляем эту ячейку в переменную
         }
       });
     }
     if (fullLine.length == 10) {  //если текущая линия заполнена
       fullLine.forEach(el => {
         el.classList.remove('tetris__block','tetris__block--static'); //стираем заполненную линию на поле
+        el.style.backgroundColor = 'transparent'; //и убираем цвет
       });
       let sectionsAbove = [];
       for (let above = 5; above <= y; above++) {  //проверяем ячейки над стертой линией
@@ -321,6 +403,8 @@ function isLinesFull() {
       sectionsAbove.reverse();  //делаем реверс массива с ячейками над стертой линией, чтобы смещение вниз начиналось с нижних ячеек
       sectionsAbove.forEach(el => {   //проходим по всем ячейкам над стертой линией и смещаем их вниз
         el.classList.remove('tetris__block','tetris__block--static');
+        sectionColor = el.style.backgroundColor;
+        el.style.backgroundColor = 'transparent';
         let coordX = +el.getAttribute('data-x');
         let coordY = +el.getAttribute('data-y');
         let sectionUnder = sectionsArr.find(elem => {
@@ -329,12 +413,13 @@ function isLinesFull() {
           }
         });
         sectionUnder.classList.add('tetris__block','tetris__block--static');
+        sectionUnder.style.backgroundColor = sectionColor;
       });
+      increasePoints();
     }
   }
 }
 
-let currentState = 0;
 // Вращение фигуры
 function rotateFigure() {
   const stateVariants = figuresList[currentFigure][3].length;   //кол-во вариантов вращения текущей фигуры
@@ -373,6 +458,7 @@ function moveDown() {
 
   if (canMove) {
     moveFigure();
+    setTimeout(moveDown, fallSpeed);
   } else {
     figure.forEach(el => {
       el.classList.add('tetris__block--static');
@@ -383,10 +469,12 @@ function moveDown() {
     canMove = true;
     currentState = 0;
     isGameOver();
+    if (fallSpeed > 250) fallSpeed -= 1;
+    setTimeout(moveDown, fallSpeed);
   }
 }
 
-setInterval(moveDown, 500);
+setTimeout(moveDown, fallSpeed);
 
 // Обрабатываем нажатие стрелок
 function relocateFigure(e) {
@@ -426,10 +514,11 @@ function isGameOver() {
   finishLine.forEach(el => {
     if (el.classList.contains('tetris__block--static')) {
       //выводим сообщение для игрока
-      alert('Вы проиграли... Но не расстраивайтесь! Попробуйте снова ☺');
+      alert(`Вы набрали ${points} баллов и проиграли... Но не расстраивайтесь! Попробуйте снова ☺`);
       //очищаем игровое поле
       sectionsArr.forEach(elem => {
         elem.classList.remove('tetris__block', 'tetris__block--static');
+        elem.style.backgroundColor = 'transparent';
       });
     }
   });
