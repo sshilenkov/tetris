@@ -1,4 +1,7 @@
 body {
+  width: 100%;
+  height: 100vh;
+  background-color: #37474F;
   margin: 0;
 	padding: 0;
 	border: 0;
@@ -9,25 +12,38 @@ body {
 }
 
 .tetris {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  background-color: #37474F;
+  display: flex;
+  justify-content: center;
 }
 
 .tetris__field {
-  position: absolute;
   display: flex;
   flex-wrap: wrap;
-  top: -100px;
   width: 250px;
   height: 600px;
-  left: 50%;
+  margin-top: -100px;
+  margin-right: 30px;
   background-color: #78909C;
-  transform: translateX(-50%);
 }
 
-.tetris__section {
+.tetris__next-figure {
+  display: flex;
+  flex-wrap: wrap;
+  width: 150px;
+  height: 150px;
+  background-color: #78909C;
+}
+
+.tetris__game {
+  position: absolute;
+  top: 27%;
+  color: #fff;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.tetris__section,
+.tetris__section-next {
   width: 25px;
   height: 25px;
   box-sizing: border-box;
@@ -35,10 +51,34 @@ body {
 
 .tetris__block,
 .tetris__block--static {
-  background-color: #fff;
-  border: 1px solid #000;
+  border: 1px solid rgba(0,0,0,0.75);
+  -webkit-box-shadow: inset 0px 0px 6px 1px rgba(0,0,0,0.75);
+  -moz-box-shadow: inset 0px 0px 6px 1px rgba(0,0,0,0.75);
+  box-shadow: inset 0px 0px 6px 1px rgba(0,0,0,0.75);
 }
 
 .tetris__block--static {
-  opacity: .7;
+  opacity: .6;
+}
+
+.tetris__block--yellow {
+  background-color: #FFEB3B;
+}
+.tetris__block--red {
+  background-color: #f44336;
+}
+.tetris__block--green {
+  background-color: #4CAF50;
+}
+.tetris__block--cyan {
+  background-color: #00BCD4;
+}
+.tetris__block--lime {
+  background-color: #CDDC39;
+}
+.tetris__block--purple {
+  background-color: #9C27B0;
+}
+.tetris__block--brown {
+  background-color: #795548;
 }
